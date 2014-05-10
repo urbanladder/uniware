@@ -5,7 +5,7 @@ require 'uniware/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "uniware"
-  spec.version       = Uniware::VERSION
+  spec.version       = Uniware::Version
   spec.authors       = ["Rajat Upadhyaya"]
   spec.email         = ["rajat@urbanladder.com"]
   spec.description   = %q{Ruby interface to the Uniware API}
@@ -20,4 +20,5 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
 end
