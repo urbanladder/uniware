@@ -1,5 +1,3 @@
 require "uniware/version"
+require "uniware/client"
 
-module Uniware
-  # Your code goes here...
-end
