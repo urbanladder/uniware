@@ -1,0 +1,1 @@
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Header/><SOAP-ENV:Body><CreateSaleOrderResponse xmlns="http://uniware.unicommerce.com/services/"><Successful>true</Successful></CreateSaleOrderResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>
