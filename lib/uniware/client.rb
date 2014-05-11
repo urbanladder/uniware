@@ -34,29 +34,25 @@ module Uniware
       tmp_addresses = []
       tmp_address_refs = []
       addresses.keys.each_with_index do |atype,i|
-        tmp_addresses << Gyoku.xml({
-          ns_key("Address") => namespaced_hash(addresses[atype]),
-          :attributes! => {ns_key("Address") => {"id" => i+1}}
-        })
+        tmp_addresses << element_with_attributes(ns_key("Address"),
+                                                 {"id" => i+1},
+                                                 namespaced_hash(addresses[atype]))
         atype_key = ns_key(atype + "Address")
-        tmp_address_refs << Gyoku.xml({
-          atype_key => {},
-          :attributes! => {atype_key => {"ref" => i+1}}
-        })
+        tmp_address_refs << element_with_attributes(atype_key, {"ref" => i+1})
       end
       order_items = items.map do |item|
+        if item.key?("CustomFields")
+          item_cfields = item.delete("CustomFields").map do |f|
+            element_with_attributes(ns_key("CustomField"),
+                                    {"name" => f["name"], "value" => f["value"]})
+          end
+          item["CustomFields!"] = item_cfields.join
+        end
         namespaced_hash(item)
       end
       cfields = custom_fields.map do |f|
-        Gyoku.xml({
-          ns_key("CustomField") => {},
-          :attributes! => {
-            ns_key("CustomField") => {
-              "name" => f["name"],
-              "value" => f["value"]
-            }
-          }
-        })
+        element_with_attributes(ns_key("CustomField"),
+                                {"name" => f["name"], "value" => f["value"]})
       end
       body = SALE_ORDER_XML.gsub(/\s+/, '') % [Gyoku.xml(namespaced_hash(data)),
                                                tmp_addresses.join,
@@ -96,6 +92,13 @@ module Uniware
           t[ns_key(k)] = v
         end
         return t
+      end
+
+      def element_with_attributes(name, attrs, data={})
+        Gyoku.xml({
+          name => data,
+          :attributes! => {name => attrs}
+        })
       end
   end
 end

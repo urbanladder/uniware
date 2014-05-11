@@ -45,7 +45,11 @@ describe Uniware do
            "TotalPrice" => 10308,
            "SellingPrice" => 10308,
            "Discount" => 2691,
-           "Code" => 5501},
+           "Code" => 5501,
+           "CustomFields" => [
+             {"name" => "itemCustomField001", "value" => "itemCustomField001_Value"},
+             {"name" => "itemCustomField002", "value" => "itemCustomField002_Value"}
+           ]},
           {"ItemSKU" => "SKU_002",
            "ShippingMethodCode" => "STD",
            "TotalPrice" => 5154,
