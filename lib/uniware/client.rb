@@ -66,11 +66,32 @@ module Uniware
       perform_operation("GetItemDetailRequest", body, facility_endpoint("01"))
     end
 
-    def create_reverse_pickup(body)
-      perform_operation("CreateReversePickupRequest", body)
+    def create_reverse_pickup(data, code)
+      tmp_body = {}
+      tmp_code = {}
+      address = data.delete("Address")
+      tmp_address = []
+      item_code = data.delete("SaleOrderItemCode")
+      action_code = data.delete("ActionCode")
+      reason = data.delete("Reason")
+      items = {ns_key("ReversePickupItem") => {
+                ns_key("SaleOrderItemCode") => item_code,
+                ns_key("Reason") => reason}}
+      tmp_body = namespaced_hash(data)
+      tmp_body[ns_key("ReversePickupItems")] = items
+      tmp_address << element_with_attributes(ns_key("Address"),
+                                                 {"id" => 1},
+                                                 namespaced_hash(address))
+      tmp_code[ns_key("ActionCode")] = action_code
+      puts tmp_address.inspect
+      puts tmp_body.inspect
+      puts Gyoku.xml(tmp_body).inspect
+      body = Gyoku.xml(tmp_body) + tmp_address[0] + Gyoku.xml(tmp_code)
+      perform_operation("CreateReversePickupRequest", body, facility_endpoint("0#{code}"))
     end
 
-    def update_sale_order_item(body, code)
+    def update_sale_order_item(data, code)
+      body = Gyoku.xml(namespaced_hash(data))
       perform_operation("UpdateTrackingStatusRequest", body, facility_endpoint("0#{code}"))
     end
 
