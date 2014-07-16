@@ -62,8 +62,8 @@ module Uniware
       perform_operation("CreateSaleOrderRequest", body)
     end
 
-    def get_item_detail(body)
-      perform_operation("GetItemDetailRequest", body, facility_endpoint("01"))
+    def get_item_detail(barcode, facility_code)
+      perform_operation("GetItemDetailRequest", barcode, facility_endpoint(facility_code))
     end
 
     def create_reverse_pickup(data, code)
