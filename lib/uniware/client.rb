@@ -63,7 +63,8 @@ module Uniware
     end
 
     def get_item_detail(barcode, facility_code)
-      perform_operation("GetItemDetailRequest", barcode, facility_endpoint(facility_code))
+      body = Gyoku.xml(namespaced_hash({"ItemCode" => barcode}))
+      perform_operation("GetItemDetailRequest", body, facility_endpoint(facility_code))
     end
 
     def create_reverse_pickup(data, code)
