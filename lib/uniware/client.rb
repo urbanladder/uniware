@@ -5,7 +5,7 @@ module Uniware
     extend Savon::Model
 
     namespace "http://uniware.unicommerce.com/services/"
-    BASE_URL = "https://%s/services/soap/?version=1.5"
+    BASE_URL = "https://%s/services/soap/?version=1.6"
     SALE_ORDER_XML = <<-SXML
       <ser:SaleOrder>
         %s
@@ -84,16 +84,13 @@ module Uniware
                                                  {"id" => 1},
                                                  namespaced_hash(address))
       tmp_code[ns_key("ActionCode")] = action_code
-      puts tmp_address.inspect
-      puts tmp_body.inspect
-      puts Gyoku.xml(tmp_body).inspect
       body = Gyoku.xml(tmp_body) + tmp_address[0] + Gyoku.xml(tmp_code)
-      perform_operation("CreateReversePickupRequest", body, facility_endpoint("0#{code}"))
+      perform_operation("CreateReversePickupRequest", body, facility_endpoint("#{code}"))
     end
 
     def update_sale_order_item(data, code)
       body = Gyoku.xml(namespaced_hash(data))
-      perform_operation("UpdateTrackingStatusRequest", body, facility_endpoint("0#{code}"))
+      perform_operation("UpdateTrackingStatusRequest", body, facility_endpoint("#{code}"))
     end
 
     private
