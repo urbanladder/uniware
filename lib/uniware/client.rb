@@ -87,6 +87,33 @@ module Uniware
       body = Gyoku.xml(tmp_body) + tmp_address[0] + Gyoku.xml(tmp_code)
       perform_operation("CreateReversePickupRequest", body, facility_endpoint("#{code}"))
     end
+    
+    def create_or_update_vendor(data, code)
+      body = Gyoku.xml(namespaced_hash(data))
+      perform_operation("CreateOrEditVendorRequest", body, facility_endpoint("#{code}"))
+    end
+
+    def create_or_update_item(data)
+      cf = ""
+      if data.has_key?("CustomFields")
+        custom_data = data.delete("CustomFields")
+        cf = custom_fields(custom_data)
+      end
+      body = Gyoku.xml(namespaced_hash(data))
+      body = body + cf
+      perform_operation("CreateOrEditItemTypeRequest", body)
+    end 
+    
+    def create_or_update_vendor_item(data, code)
+      cf = ""
+      if data.has_key?("CustomFields")
+        custom_data = data.delete("CustomFields")
+        cf = custom_fields(custom_data)
+      end
+      body = Gyoku.xml(namespaced_hash(data))
+      body = body + cf
+      perform_operation("CreateOrEditVendorItemTypeRequest", body, facility_endpoint("#{code}"))
+    end
 
     def update_sale_order_item(data, code)
       body = Gyoku.xml(namespaced_hash(data))
@@ -99,6 +126,14 @@ module Uniware
         response = client.request :ser, name do
           soap.body = body
         end
+      end
+      
+      def custom_fields(data)
+        cfields = data.map do |k, v|
+          element_with_attributes(ns_key("CustomField"), {"name" => k, "value" => v})
+        end
+        cfields = cfields.join
+        return "<ser:CustomFields>%s</ser:CustomFields>" % [cfields]
       end
 
       def ns_key(s)
