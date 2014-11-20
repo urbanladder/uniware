@@ -120,6 +120,21 @@ module Uniware
       perform_operation("UpdateTrackingStatusRequest", body, facility_endpoint("#{code}"))
     end
 
+    def create_approved_purchase_order(data, code)
+      body = format_purchase_order_data(data)
+      perform_operation("CreateApprovedPurchaseOrderRequest", body, facility_endpoint("#{code}"))
+    end
+
+    def create_pending_purchase_order(data, code)
+      body = format_purchase_order_data(data)
+      perform_operation("CreatePurchaseOrderRequest", body, facility_endpoint("#{code}"))
+    end
+
+    def adding_order_items_pending_po(data, code)
+      body = format_purchase_order_data(data)
+      perform_operation("AddPurchaseOrderItemsRequest", body, facility_endpoint("#{code}"))
+    end
+
     private
       def perform_operation(name, body, endpoint=nil)
         client.wsdl.endpoint = endpoint || @endpoint
@@ -134,6 +149,41 @@ module Uniware
         end
         cfields = cfields.join
         return "<ser:CustomFields>%s</ser:CustomFields>" % [cfields]
+      end
+
+      def format_purchase_order_data (data)
+        custom_field_values = ""
+        purchase_order_items = ""
+        if data.has_key?("PurchaseOrderItems")
+          param_data = data.delete("PurchaseOrderItems")
+          purchase_order_items = multi_parameter_format(param_data, "PurchaseOrderItems")
+        end
+        if data.has_key?("CustomFields")
+          custom_data = data.delete("CustomFields")
+          custom_field_values = custom_fields_po(custom_data)
+        end
+        body = Gyoku.xml(namespaced_hash(data))
+        body = body + purchase_order_items + custom_field_values
+        return body
+      end
+      
+      def custom_fields_po(data)
+        cfields = data.map do |f|
+        element_with_attributes(ns_key("CustomField"),
+                                {"name" => f["name"], "value" => f["value"]})
+        end
+        return "<ser:CustomFields>%s</ser:CustomFields>" % cfields.join
+      end
+
+      def multi_parameter_format (data, parameter)
+        key_name = parameter.strip.chop
+        result = ""
+        data.each do |f|
+          items = Gyoku.xml(namespaced_hash(f))
+          result_field = "<ser:%s>%s</ser:%s>" % [key_name,items,key_name]
+          result += result_field
+        end
+        return "<ser:%s>%s</ser:%s>" % [parameter,result,parameter]
       end
 
       def ns_key(s)
