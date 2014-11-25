@@ -121,18 +121,32 @@ module Uniware
     end
 
     def create_approved_purchase_order(data, code)
-      body = format_purchase_order_data(data)
+      hash_data = {"PurchaseOrderCode" => data["PurchaseOrderCode"],
+                   "VendorCode" => data["VendorCode"],
+                   "VendorAgreementName" => data["VendorAgreementName"],
+                   "CurrencyCode" => data["CurrencyCode"],
+                   "DeliveryDate" => data["DeliveryDate"]}
+      purchase_order_items = ''
+      custom_field_values = ''
+      if data["PurchaseOrderItems"].present?
+        purchase_order_items = purchase_order_items_format(data["PurchaseOrderItems"])
+      end
+      if data["CustomFields"].present?
+          custom_field_values = custom_fields_po(data["CustomFields"])
+      end
+      body = Gyoku.xml(namespaced_hash(hash_data))
+      body = body + purchase_order_items + custom_field_values
       perform_operation("CreateApprovedPurchaseOrderRequest", body, facility_endpoint("#{code}"))
     end
 
     def create_pending_purchase_order(data, code)
-      body = format_purchase_order_data(data)
+      hash_data = {"PurchaseOrderCode" => data["PurchaseOrderCode"],
+                   "VendorCode" => data["VendorCode"],
+                   "VendorAgreementName" => data["VendorAgreementName"],
+                   "CurrencyCode" => data["CurrencyCode"],
+                   "DeliveryDate" => data["DeliveryDate"]}
+      body = Gyoku.xml(namespaced_hash(hash_data))
       perform_operation("CreatePurchaseOrderRequest", body, facility_endpoint("#{code}"))
-    end
-
-    def adding_order_items_pending_po(data, code)
-      body = format_purchase_order_data(data)
-      perform_operation("AddPurchaseOrderItemsRequest", body, facility_endpoint("#{code}"))
     end
 
     private
@@ -151,39 +165,35 @@ module Uniware
         return "<ser:CustomFields>%s</ser:CustomFields>" % [cfields]
       end
 
-      def format_purchase_order_data (data)
-        custom_field_values = ""
-        purchase_order_items = ""
-        if data.has_key?("PurchaseOrderItems")
-          param_data = data.delete("PurchaseOrderItems")
-          purchase_order_items = multi_parameter_format(param_data, "PurchaseOrderItems")
-        end
-        if data.has_key?("CustomFields")
-          custom_data = data.delete("CustomFields")
-          custom_field_values = custom_fields_po(custom_data)
-        end
-        body = Gyoku.xml(namespaced_hash(data))
-        body = body + purchase_order_items + custom_field_values
-        return body
-      end
       
       def custom_fields_po(data)
         cfields = data.map do |f|
-        element_with_attributes(ns_key("CustomField"),
+          element_with_attributes(ns_key("CustomField"),
                                 {"name" => f["name"], "value" => f["value"]})
         end
         return "<ser:CustomFields>%s</ser:CustomFields>" % cfields.join
       end
 
-      def multi_parameter_format (data, parameter)
-        key_name = parameter.strip.chop
+      def purchase_order_items_format (data)
         result = ""
         data.each do |f|
-          items = Gyoku.xml(namespaced_hash(f))
-          result_field = "<ser:%s>%s</ser:%s>" % [key_name,items,key_name]
+          hash_items = {"ItemSKU" => f["ItemSKU"],
+                        "Quantity" => f["Quantity"], 
+                        "UnitPrice" => f["UnitPrice"]}
+          if f["MaxRetailPrice"].present?
+            hash_items.merge!("MaxRetailPrice" => f["MaxRetailPrice"])
+          end
+          if f["Discount"].present?
+            hash_items.merge!("Discount" => f["Discount"])
+          end
+          if f["TaxTypeCode"].present?
+            hash_items.merge!("TaxTypeCode" => f["TaxTypeCode"])
+          end
+          items = Gyoku.xml(namespaced_hash(hash_items))
+          result_field = "<ser:PurchaseOrderItem>%s</ser:PurchaseOrderItem>" % items
           result += result_field
         end
-        return "<ser:%s>%s</ser:%s>" % [parameter,result,parameter]
+        return "<ser:PurchaseOrderItems>%s</ser:PurchaseOrderItems>" % result
       end
 
       def ns_key(s)
