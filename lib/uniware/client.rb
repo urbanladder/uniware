@@ -120,6 +120,35 @@ module Uniware
       perform_operation("UpdateTrackingStatusRequest", body, facility_endpoint("#{code}"))
     end
 
+    def create_approved_purchase_order(data, code)
+      hash_data = {"PurchaseOrderCode" => data["PurchaseOrderCode"],
+                   "VendorCode" => data["VendorCode"],
+                   "VendorAgreementName" => data["VendorAgreementName"],
+                   "CurrencyCode" => data["CurrencyCode"],
+                   "DeliveryDate" => data["DeliveryDate"]}
+      purchase_order_items = ''
+      custom_field_values = ''
+      if data["PurchaseOrderItems"].present?
+        purchase_order_items = purchase_order_items_format(data["PurchaseOrderItems"])
+      end
+      if data["CustomFields"].present?
+          custom_field_values = custom_fields_po(data["CustomFields"])
+      end
+      body = Gyoku.xml(namespaced_hash(hash_data))
+      body = body + purchase_order_items + custom_field_values
+      perform_operation("CreateApprovedPurchaseOrderRequest", body, facility_endpoint("#{code}"))
+    end
+
+    def create_pending_purchase_order(data, code)
+      hash_data = {"PurchaseOrderCode" => data["PurchaseOrderCode"],
+                   "VendorCode" => data["VendorCode"],
+                   "VendorAgreementName" => data["VendorAgreementName"],
+                   "CurrencyCode" => data["CurrencyCode"],
+                   "DeliveryDate" => data["DeliveryDate"]}
+      body = Gyoku.xml(namespaced_hash(hash_data))
+      perform_operation("CreatePurchaseOrderRequest", body, facility_endpoint("#{code}"))
+    end
+
     private
       def perform_operation(name, body, endpoint=nil)
         client.wsdl.endpoint = endpoint || @endpoint
@@ -134,6 +163,37 @@ module Uniware
         end
         cfields = cfields.join
         return "<ser:CustomFields>%s</ser:CustomFields>" % [cfields]
+      end
+
+      
+      def custom_fields_po(data)
+        cfields = data.map do |f|
+          element_with_attributes(ns_key("CustomField"),
+                                {"name" => f["name"], "value" => f["value"]})
+        end
+        return "<ser:CustomFields>%s</ser:CustomFields>" % cfields.join
+      end
+
+      def purchase_order_items_format (data)
+        result = ""
+        data.each do |f|
+          hash_items = {"ItemSKU" => f["ItemSKU"],
+                        "Quantity" => f["Quantity"], 
+                        "UnitPrice" => f["UnitPrice"]}
+          if f["MaxRetailPrice"].present?
+            hash_items.merge!("MaxRetailPrice" => f["MaxRetailPrice"])
+          end
+          if f["Discount"].present?
+            hash_items.merge!("Discount" => f["Discount"])
+          end
+          if f["TaxTypeCode"].present?
+            hash_items.merge!("TaxTypeCode" => f["TaxTypeCode"])
+          end
+          items = Gyoku.xml(namespaced_hash(hash_items))
+          result_field = "<ser:PurchaseOrderItem>%s</ser:PurchaseOrderItem>" % items
+          result += result_field
+        end
+        return "<ser:PurchaseOrderItems>%s</ser:PurchaseOrderItems>" % result
       end
 
       def ns_key(s)
