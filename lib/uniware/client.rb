@@ -88,9 +88,14 @@ module Uniware
       perform_operation("CreateReversePickupRequest", body, facility_endpoint("#{code}"))
     end
     
-    def create_or_update_vendor(data, code)
-      body = Gyoku.xml(namespaced_hash(data))
-      perform_operation("CreateOrEditVendorRequest", body, facility_endpoint("#{code}"))
+    def create_vendor(data, code)
+      body = Gyoku.xml(nested_namespaced_hash(data))
+      perform_operation("CreateVendorRequest", body, facility_endpoint("#{code}"))
+    end
+
+    def update_vendor(data, code)
+      body = Gyoku.xml(nested_namespaced_hash(data))
+      perform_operation("EditVendorRequest", body, facility_endpoint("#{code}"))
     end
 
     def create_or_update_item(data)
@@ -204,6 +209,23 @@ module Uniware
         t = {}
         h.each do |k,v|
           t[ns_key(k)] = v
+        end
+        return t
+      end
+      
+      def nested_namespaced_hash(h)
+        t = {}
+        h.each do |k,v|
+          if v.is_a?(Hash)
+            t[ns_key(k)] = nested_namespaced_hash(v)
+          elsif v.is_a?(Array)
+            t[ns_key(k)] = []
+            v.each do |x|
+                t[ns_key(k)] << nested_namespaced_hash(x)
+            end
+          else
+            t[ns_key(k)] = v
+          end
         end
         return t
       end
