@@ -89,12 +89,28 @@ module Uniware
     end
     
     def create_vendor(data, code)
-      body = Gyoku.xml(nested_namespaced_hash(data))
+      vendor = data.delete("Vendor")
+      cf = ""
+      if vendor.has_key?("CustomFields")
+        custom_data = vendor.delete("CustomFields")
+        cf = custom_fields(custom_data)
+      end
+      vendor = Gyoku.xml(nested_namespaced_hash(vendor))
+      body = vendor + cf
+      body = "<ser:Vendor>%s</ser:Vendor>" % [body]
       perform_operation("CreateVendorRequest", body, facility_endpoint("#{code}"))
     end
 
     def update_vendor(data, code)
-      body = Gyoku.xml(nested_namespaced_hash(data))
+      vendor = data.delete("Vendor")
+      cf = ""
+      if vendor.has_key?("CustomFields")
+        custom_data = vendor.delete("CustomFields")
+        cf = custom_fields(custom_data)
+      end
+      vendor = Gyoku.xml(nested_namespaced_hash(vendor))
+      body = vendor + cf
+      body = "<ser:Vendor>%s</ser:Vendor>" % [body]
       perform_operation("EditVendorRequest", body, facility_endpoint("#{code}"))
     end
 
