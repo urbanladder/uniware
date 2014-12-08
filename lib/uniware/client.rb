@@ -241,10 +241,7 @@ module Uniware
           if v.is_a?(Hash)
             t[ns_key(k)] = nested_namespaced_hash(v)
           elsif v.is_a?(Array)
-            t[ns_key(k)] = []
-            v.each do |x|
-                t[ns_key(k)] << nested_namespaced_hash(x)
-            end
+            t[ns_key(k)] = v.map { |x| nested_namespaced_hash(x)}
           else
             t[ns_key(k)] = v
           end
