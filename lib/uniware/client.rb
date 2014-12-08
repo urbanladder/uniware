@@ -5,7 +5,7 @@ module Uniware
     extend Savon::Model
 
     namespace "http://uniware.unicommerce.com/services/"
-    BASE_URL = "https://%s/services/soap/?version=1.6"
+    BASE_URL = "https://%s/services/soap/?version=1.7"
     SALE_ORDER_XML = <<-SXML
       <ser:SaleOrder>
         %s
