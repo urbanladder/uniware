@@ -91,12 +91,15 @@ module Uniware
     def create_vendor(data, code)
       vendor = data.delete("Vendor")
       cf = ""
+      tmp_code = {}
       if vendor.has_key?("CustomFields")
         custom_data = vendor.delete("CustomFields")
         cf = custom_fields(custom_data)
       end
+      cform = vendor.delete("AcceptsCForm")
+      tmp_code[ns_key("AcceptsCForm")] = cform
       vendor = Gyoku.xml(nested_namespaced_hash(vendor))
-      body = vendor + cf
+      body = Gyoku.xml(tmp_code) + cf + vendor
       body = "<ser:Vendor>%s</ser:Vendor>" % [body]
       perform_operation("CreateVendorRequest", body, facility_endpoint("#{code}"))
     end
@@ -104,12 +107,15 @@ module Uniware
     def update_vendor(data, code)
       vendor = data.delete("Vendor")
       cf = ""
+      tmp_code = {}
       if vendor.has_key?("CustomFields")
         custom_data = vendor.delete("CustomFields")
         cf = custom_fields(custom_data)
       end
+      cform = vendor.delete("AcceptsCForm")
+      tmp_code[ns_key("AcceptsCForm")] = cform
       vendor = Gyoku.xml(nested_namespaced_hash(vendor))
-      body = vendor + cf
+      body = Gyoku.xml(tmp_code) + cf + vendor
       body = "<ser:Vendor>%s</ser:Vendor>" % [body]
       perform_operation("EditVendorRequest", body, facility_endpoint("#{code}"))
     end
