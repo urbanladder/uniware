@@ -142,6 +142,21 @@ module Uniware
       perform_operation("CreateOrEditVendorItemTypeRequest", body, facility_endpoint("#{code}"))
     end
 
+    def create_gatepass(data, code)
+      body = Gyoku.xml(nested_namespaced_hash(data))
+      perform_operation("CreateGatePassRequest", body, facility_endpoint("#{code}"))
+    end
+
+    def add_item_to_gatepass(data, code)
+      body = Gyoku.xml(nested_namespaced_hash(data))
+      perform_operation("AddItemToGatePassRequest", body, facility_endpoint("#{code}"))
+    end
+
+    def complete_gatepass(data, code)
+      body = Gyoku.xml(nested_namespaced_hash(data))
+      perform_operation("CompleteGatePassRequest", body, facility_endpoint("#{code}"))
+    end
+
     def update_sale_order_item(data, code)
       body = Gyoku.xml(namespaced_hash(data))
       perform_operation("UpdateTrackingStatusRequest", body, facility_endpoint("#{code}"))
