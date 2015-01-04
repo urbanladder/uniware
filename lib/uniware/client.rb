@@ -176,6 +176,31 @@ module Uniware
       perform_operation("CreatePurchaseOrderRequest", body, facility_endpoint("#{code}"))
     end
 
+    def get_sale_order(sale_order_code)
+      body = Gyoku.xml(namespaced_hash({"Code" => sale_order_code}))
+      body = "<ser:SaleOrder>%s</ser:SaleOrder>" % [body]
+      perform_operation("GetSaleOrderRequest", body)
+    end
+
+
+    def switch_sale_order_item_facility_request(data)
+      hash_data = {"Facility" => data["Facility"],
+                   "SaleOrderCode" => data["SaleOrderCode"]}
+      sale_order_items = ""
+      if data["SaleOrderItemCodes"].present?
+        result = ""
+        data["SaleOrderItemCodes"].each do |f|
+          hash_items = {"SaleOrderItemCode" => f["SaleOrderItemCode"]}
+          items = Gyoku.xml(namespaced_hash(hash_items))
+          result += items
+        end
+        sale_order_items = "<ser:SaleOrderItemCodes>%s</ser:SaleOrderItemCodes>" % result
+      end
+      body = Gyoku.xml(namespaced_hash(hash_data))
+      body += sale_order_items
+      perform_operation("SwitchSaleOrderItemFacilityRequest", body)
+    end
+
     private
       def perform_operation(name, body, endpoint=nil)
         client.wsdl.endpoint = endpoint || @endpoint
