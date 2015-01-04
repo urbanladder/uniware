@@ -183,14 +183,14 @@ module Uniware
     end
 
 
-    def switch_sale_order_item_facility_request(data)
-      hash_data = {"Facility" => data["Facility"],
-                   "SaleOrderCode" => data["SaleOrderCode"]}
+    def switch_sale_order_item_facility(order, facility)
+      hash_data = {"Facility" => facility,
+                   "SaleOrderCode" => order["Code"]}
       sale_order_items = ""
-      if data["SaleOrderItemCodes"].present?
+      if order["Items"].present?
         result = ""
-        data["SaleOrderItemCodes"].each do |f|
-          hash_items = {"SaleOrderItemCode" => f["SaleOrderItemCode"]}
+        order["Items"].each do |f|
+          hash_items = {"SaleOrderItemCode" => f["Code"]}
           items = Gyoku.xml(namespaced_hash(hash_items))
           result += items
         end
@@ -198,7 +198,7 @@ module Uniware
       end
       body = Gyoku.xml(namespaced_hash(hash_data))
       body += sale_order_items
-      perform_operation("SwitchSaleOrderItemFacilityRequest", body)
+      perform_operation("SwitchSaleOrderItemFacilityRequest", body, facility_endpoint("#{facility}"))
     end
 
     private
