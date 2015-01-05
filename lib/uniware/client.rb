@@ -67,7 +67,7 @@ module Uniware
       perform_operation("GetItemDetailRequest", body, facility_endpoint(facility_code))
     end
 
-    def create_reverse_pickup(data, code)
+    def create_reverse_pickup(data, facility_code)
       tmp_body = {}
       tmp_code = {}
       address = data.delete("Address")
@@ -85,10 +85,10 @@ module Uniware
                                                  namespaced_hash(address))
       tmp_code[ns_key("ActionCode")] = action_code
       body = Gyoku.xml(tmp_body) + tmp_address[0] + Gyoku.xml(tmp_code)
-      perform_operation("CreateReversePickupRequest", body, facility_endpoint("#{code}"))
+      perform_operation("CreateReversePickupRequest", body, facility_endpoint(facility_code))
     end
     
-    def create_vendor(data, code)
+    def create_vendor(data, facility_code)
       vendor = data.delete("Vendor")
       cf = ""
       tmp_code = {}
@@ -101,10 +101,10 @@ module Uniware
       vendor = Gyoku.xml(nested_namespaced_hash(vendor))
       body = Gyoku.xml(tmp_code) + cf + vendor
       body = "<ser:Vendor>%s</ser:Vendor>" % [body]
-      perform_operation("CreateVendorRequest", body, facility_endpoint("#{code}"))
+      perform_operation("CreateVendorRequest", body, facility_endpoint(facility_code))
     end
 
-    def update_vendor(data, code)
+    def update_vendor(data, facility_code)
       vendor = data.delete("Vendor")
       cf = ""
       tmp_code = {}
@@ -117,7 +117,7 @@ module Uniware
       vendor = Gyoku.xml(nested_namespaced_hash(vendor))
       body = Gyoku.xml(tmp_code) + cf + vendor
       body = "<ser:Vendor>%s</ser:Vendor>" % [body]
-      perform_operation("EditVendorRequest", body, facility_endpoint("#{code}"))
+      perform_operation("EditVendorRequest", body, facility_endpoint(facility_code))
     end
 
     def create_or_update_item(data)
@@ -131,7 +131,7 @@ module Uniware
       perform_operation("CreateOrEditItemTypeRequest", body)
     end 
     
-    def create_or_update_vendor_item(data, code)
+    def create_or_update_vendor_item(data, facility_code)
       cf = ""
       if data.has_key?("CustomFields")
         custom_data = data.delete("CustomFields")
@@ -139,15 +139,30 @@ module Uniware
       end
       body = Gyoku.xml(namespaced_hash(data))
       body = body + cf
-      perform_operation("CreateOrEditVendorItemTypeRequest", body, facility_endpoint("#{code}"))
+      perform_operation("CreateOrEditVendorItemTypeRequest", body, facility_endpoint(facility_code))
     end
 
-    def update_sale_order_item(data, code)
+    def create_gatepass(data, facility_code)
+      body = Gyoku.xml(nested_namespaced_hash(data))
+      perform_operation("CreateGatePassRequest", body, facility_endpoint(facility_code))
+    end
+
+    def add_item_to_gatepass(data, facility_code)
+      body = Gyoku.xml(nested_namespaced_hash(data))
+      perform_operation("AddItemToGatePassRequest", body, facility_endpoint(facility_code))
+    end
+
+    def complete_gatepass(data, facility_code)
+      body = Gyoku.xml(nested_namespaced_hash(data))
+      perform_operation("CompleteGatePassRequest", body, facility_endpoint(facility_code))
+    end
+
+    def update_sale_order_item(data, facility_code)
       body = Gyoku.xml(namespaced_hash(data))
-      perform_operation("UpdateTrackingStatusRequest", body, facility_endpoint("#{code}"))
+      perform_operation("UpdateTrackingStatusRequest", body, facility_endpoint(facility_code))
     end
 
-    def create_approved_purchase_order(data, code)
+    def create_approved_purchase_order(data, facility_code)
       hash_data = {"PurchaseOrderCode" => data["PurchaseOrderCode"],
                    "VendorCode" => data["VendorCode"],
                    "VendorAgreementName" => data["VendorAgreementName"],
@@ -163,17 +178,17 @@ module Uniware
       end
       body = Gyoku.xml(namespaced_hash(hash_data))
       body = body + purchase_order_items + custom_field_values
-      perform_operation("CreateApprovedPurchaseOrderRequest", body, facility_endpoint("#{code}"))
+      perform_operation("CreateApprovedPurchaseOrderRequest", body, facility_endpoint(facility_code))
     end
 
-    def create_pending_purchase_order(data, code)
+    def create_pending_purchase_order(data, facility_code)
       hash_data = {"PurchaseOrderCode" => data["PurchaseOrderCode"],
                    "VendorCode" => data["VendorCode"],
                    "VendorAgreementName" => data["VendorAgreementName"],
                    "CurrencyCode" => data["CurrencyCode"],
                    "DeliveryDate" => data["DeliveryDate"]}
       body = Gyoku.xml(namespaced_hash(hash_data))
-      perform_operation("CreatePurchaseOrderRequest", body, facility_endpoint("#{code}"))
+      perform_operation("CreatePurchaseOrderRequest", body, facility_endpoint(facility_code))
     end
 
     private
